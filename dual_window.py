@@ -1,27 +1,31 @@
-import numpy as np
+import os
 import pygame
-from tkinter import Tk
-# from color_picker import Pick
-# import time
-# pygame init hah
-pygame.init()
+import numpy as np
+import tkinter as tk
+from tkinter import *
+from color_picker import pick_color
 
-toroide = False
 pauseExect = True
+toroide = True
 running = True
-
-# display config
-width, height = 1000, 1000
-screen = pygame.display.set_mode((height, width))
-
 # colors 
 # bg -> c
 # cell -> v
 bg_color = 25, 25, 25  # bg_color
 white_color = 0, 0, 0  # cell
 cell_color = 255, 255, 255
+# --------------------------------
 
+
+run = True
+root = tk.Tk() 
+
+width, height = 500, 500
+screen = pygame.display.set_mode((height, width))
+screen.fill(pygame.Color(255,255,255))
 screen.fill(bg_color)
+
+pygame.display.init()
 
 # rows and colls
 # 100 x 100 matrix
@@ -50,7 +54,6 @@ def sum_of_neighbors(x, y):
     )
     return total
 
-
 # toroide
 def sum_of_neighbors_t(x, y):
     total = (
@@ -66,14 +69,6 @@ def sum_of_neighbors_t(x, y):
     )
     return total
 
-def pick_color():
-    root = Tk()
-    color = pick_color()
-    if color:
-        root.destroy() 
-        return color
-    root.mainloop()
-    
 
 # automata palo
 system_state[5, 3] = 1
@@ -86,36 +81,58 @@ system_state[22, 23] = 1
 system_state[21, 23] = 1
 system_state[20, 23] = 1
 
-# inf loop
-while running == True:
-    # copy
-    new_system = np.copy(system_state)
-    # recolor and wait between iterations
-    screen.fill(bg_color)
-    # time.sleep(0.1)
+system_state[98, 99] = 1
+system_state[97, 99] = 1
+system_state[96, 99] = 1
+system_state[98, 98] = 1
+system_state[97, 97] = 1
 
-    # event handler
-    events = pygame.event.get()
 
-    for e in events:
+def draw(opcion):
+    global cell_color, bg_color
+    if opcion == 'celula':
+        cell_color = pick_color(root) 
+    if opcion == 'Bg':
+        bg_color = pick_color(root)   
+def stop():
+    global pauseExect
+    pauseExect = not pauseExect
+    
+button1 = Button(root,text = 'Cell color',  command=lambda:draw('celula'))
+button1.pack(side=LEFT)
+button1 = Button(root,text = 'Bg color',  command=lambda:draw('Bg'))
+button1.pack(side=LEFT)
+buttonStop = Button(root,text = 'Stop/Play', command = stop)
+buttonStop.pack(side=RIGHT)
+
+pygame.display.update()
+root.update()
+
+def event_handler(es):
+    global running, pauseExect
+    for e in es:
         if e.type == pygame.QUIT:
             running = False
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_SPACE:
-                pauseExect = not pauseExect
-            if e.key == pygame.K_c:
-                # bg_color = pick_color()
-                pass
-            if e.key == pygame.K_v:
-                pass
-                # cell_color = pick_color()
+                pauseExect = True if not pauseExect else False 
+        # Get cursor pos and draw        
         mouse_click = pygame.mouse.get_pressed(3)
         if mouse_click[0] or mouse_click[1] or mouse_click[2]:
             pos_x, pos_y = pygame.mouse.get_pos()
             new_cell_x = int(np.floor(pos_x/dimention_cell_width))
             new_cell_y = int(np.floor(pos_y/dimention_cell_height))
+            # Draw with r_click and erase with l_click
             new_system[new_cell_x, new_cell_y] = not mouse_click[2]
 
+while running:
+    # copy
+    new_system = np.copy(system_state)
+    # recolor and wait between iterations
+    screen.fill(bg_color)
+    events = pygame.event.get()
+    event_handler(events)
+    
     for y in range(0, num_cells_x):
         for x in range(0, num_cells_y):
             # check for pause
@@ -145,9 +162,7 @@ while running == True:
                 pygame.draw.polygon(screen, white_color, polygon, 1)
             else:
                 pygame.draw.polygon(screen, cell_color, polygon, 0)
-
     # state update
-    system_state = np.copy(new_system)
-
-    # display
+    system_state = np.copy(new_system) 
     pygame.display.update()
+    root.update()
