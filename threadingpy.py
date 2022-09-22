@@ -5,7 +5,8 @@ import time
 from tkinter import Tk, Button, Label, ALL, EventType
 from color_picker import pick_color
 color = 0, 0, 0
- 
+
+
 def color_celula(root):
     color = pick_color(root)
     print(color)
@@ -13,9 +14,11 @@ def color_celula(root):
 def color_gradient():
     print('pick color')
     root = Tk()
-    Label(root, text= "This window will get closed after 3 seconds...", font=('Helvetica 20 bold')).pack(pady=20) 
+    Label(root, text="This window will get closed after 3 seconds...",
+          font=('Helvetica 20 bold')).pack(pady=20)
     print("Hola desde dentro de la funcion")
-    Button(root, text= "Elegir color para celula", command=lambda: color_celula(root)).place(x=50, y=50) 
+    Button(root, text="Elegir color para celula",
+           command=lambda: color_celula(root)).place(x=50, y=50)
     root.mainloop()
 
 
@@ -43,4 +46,3 @@ if __name__ == "__main__":
     x.join()
     logging.info("Main    : all done")
     print(color)
-
