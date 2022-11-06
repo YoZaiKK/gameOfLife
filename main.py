@@ -2,6 +2,7 @@ import math
 import pygame
 import numpy as np
 from tkinter import *
+import tkinter as tk
 from color_picker import pick_color
 import matplotlib.pyplot as plt
 
@@ -44,6 +45,19 @@ def toro():
     etiqToro.config(text="Si" if toroide else "No")
 
 
+def leer():
+    global system_state
+    system_state = np.loadtxt('./static/matrix.txt', usecols=range(num_cells_x)) 
+
+
+def guardar(CXY):
+    #Binary data
+    np.save('./static/matrix.npy', CXY)
+
+    #Human readable data
+    np.savetxt('./static/matrix.txt', CXY)
+
+
 def plot(plt, cell_array_x, cell_gen_y, cell_array_x_log):
     plt.plot(cell_gen_y, cell_array_x, ":", color='r', label='normal')
     plt.plot(cell_gen_y, cell_array_x_log, ":", color='g', label='log_10')
@@ -55,7 +69,9 @@ def plot(plt, cell_array_x, cell_gen_y, cell_array_x_log):
 
 
 root = Tk()
-# root.geometry("200x100")
+root.resizable(0, 0)
+root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=3)
 root.wm_title("Opciones")
 cell_counting_tk = 0.0
 # Et de numero de celulas vivas
@@ -63,13 +79,13 @@ etiqGeneracionText = Label(root, text='Iteracion: ')
 etiqGeneracion = Label(root, text=cell_counting_tk, foreground="yellow",
                        background="black", borderwidth=5, anchor="w", width=15)
 etiqGeneracionText.grid(row=0, column=0)
-etiqGeneracion.grid(row=0, column=1)
+etiqGeneracion.grid(row=0, column=1, sticky=tk.EW)
 # Et de generaciones
 etiqPoblacionText = Label(root, text='Poblacion: ')
 etiqPoblacion = Label(root, text=cell_counting_tk, foreground="yellow",
                       background="black", borderwidth=5, anchor="w", width=15)
 etiqPoblacionText.grid(row=1, column=0)
-etiqPoblacion.grid(row=1, column=1)
+etiqPoblacion.grid(row=1, column=1, sticky=tk.EW)
 # btn para el color de la celula
 buttonCellColor = Button(root, text='Cell color',
                          command=lambda: draw('celula'))
@@ -96,8 +112,18 @@ buttonToro.grid(row=5, column=0, sticky='nesw')
 
 # Et de numero de celulas vivas
 etiqToro = Label(root, text="Si" if toroide else "No", foreground="yellow",
-                 background="black", borderwidth=5, anchor="w", width=15)
-etiqToro.grid(row=5, column=1)
+                 background="black", borderwidth=5, anchor="w")
+etiqToro.grid(row=5, column=1, sticky='nesw')
+
+# # Buttons to Save and read matrix
+
+# btn para read matrix
+buttonTorRead = Button(root, text='Abrir configuracion', command=lambda:leer())
+buttonTorRead.grid(row=6, column=0, sticky='nesw')
+
+# btn para Save matrix
+buttonTorSave = Button(root, text="Guardar configuracion", command=lambda:guardar(system_state))
+buttonTorSave.grid(row=6, column=1, sticky='nesw')
 
 # root update
 root.update()
