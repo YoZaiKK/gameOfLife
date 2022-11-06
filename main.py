@@ -1,13 +1,13 @@
-import os
+import math
 import pygame
 import numpy as np
-import tkinter as tk
 from tkinter import *
 from color_picker import pick_color
 import matplotlib.pyplot as plt
 
 pauseExect = True
 toroide = True
+# run = True
 running = True
 # colors
 bg_color = 0, 0, 0
@@ -15,31 +15,110 @@ cell_color = 255, 255, 255
 
 cell_counting = 0
 cell_array_x = [0.0]
+cell_array_x_log = [0.0]
 cell_generation = 0
 cell_gen_y = [0.0]
-plt.plot(cell_gen_y, cell_array_x, ":", color="b")
 # --------------------------------
 
 
-# run = True
-root = tk.Tk()
+# # Buttons and functions
+# ---Functions
 
+
+def draw(opcion):
+    global cell_color, bg_color, bg_color
+    if opcion == 'celula':
+        cell_color = pick_color(root)
+    if opcion == 'Bg':
+        bg_color = pick_color(root)
+
+
+def stop():
+    global pauseExect
+    pauseExect = not pauseExect
+
+
+def toro():
+    global toroide, etiqToro
+    toroide = not toroide
+    etiqToro.config(text="Si" if toroide else "No")
+
+
+def plot(plt, cell_array_x, cell_gen_y, cell_array_x_log):
+    plt.plot(cell_gen_y, cell_array_x, ":", color='r', label='normal')
+    plt.plot(cell_gen_y, cell_array_x_log, ":", color='g', label='log_10')
+    plt.xlabel('generacion')
+    plt.ylabel('poblacion')
+    plt.title('Grafica de poblacion')
+    plt.legend()
+    plt.show()
+
+
+root = Tk()
+# root.geometry("200x100")
+root.wm_title("Opciones")
+cell_counting_tk = 0.0
+# Et de numero de celulas vivas
+etiqGeneracionText = Label(root, text='Iteracion: ')
+etiqGeneracion = Label(root, text=cell_counting_tk, foreground="yellow",
+                       background="black", borderwidth=5, anchor="w", width=15)
+etiqGeneracionText.grid(row=0, column=0)
+etiqGeneracion.grid(row=0, column=1)
+# Et de generaciones
+etiqPoblacionText = Label(root, text='Poblacion: ')
+etiqPoblacion = Label(root, text=cell_counting_tk, foreground="yellow",
+                      background="black", borderwidth=5, anchor="w", width=15)
+etiqPoblacionText.grid(row=1, column=0)
+etiqPoblacion.grid(row=1, column=1)
+# btn para el color de la celula
+buttonCellColor = Button(root, text='Cell color',
+                         command=lambda: draw('celula'))
+buttonCellColor.grid(row=2, column=0, sticky='nesw')
+
+# btn para el color del bg
+buttonBgColor = Button(root, text='Bg color',  command=lambda: draw('Bg'))
+buttonBgColor.grid(row=2, column=1, sticky='nesw')
+
+# btn para detener y continuar animacion
+buttonStop = Button(root, text='Stop / Go', command=stop,
+                    bg='black', fg='yellow', relief='raised')
+buttonStop.grid(row=3, columnspan=2, column=0, sticky='nesw')
+
+# btn para lanzar el plot
+buttonPlot = Button(root, text='Ver grafica', command=lambda: plot(
+    plt, cell_array_x, cell_gen_y, cell_array_x_log
+))
+buttonPlot.grid(row=4, columnspan=2, column=0, sticky='nesw')
+
+# btn para cambiar de toroide a no toroide
+buttonToro = Button(root, text='Toroide', command=toro)
+buttonToro.grid(row=5, column=0, sticky='nesw')
+
+# Et de numero de celulas vivas
+etiqToro = Label(root, text="Si" if toroide else "No", foreground="yellow",
+                 background="black", borderwidth=5, anchor="w", width=15)
+etiqToro.grid(row=5, column=1)
+
+# root update
+root.update()
+
+# # Valores iniciales y de configuracion del pygame
 width, height = 1000, 1000
 screen = pygame.display.set_mode((height, width))
 screen.fill(pygame.Color(255, 255, 255))
 screen.fill(bg_color)
 
 pygame.display.init()
+pygame.display.update()
 
 # rows and colls
 # 100 x 100 matrix
 num_cells_x, num_cells_y = 250, 250
-
+# tamanio de pixeles
 dimention_cell_width = width/num_cells_x
 dimention_cell_height = height/num_cells_y
 
-#  Cell state
-
+#  Cell state matrix
 system_state = np.zeros((num_cells_x, num_cells_y))
 
 
@@ -111,46 +190,6 @@ system_state[54+60, 50+100] = 1
 system_state[55+60, 50+100] = 1
 system_state[56+60, 50+100] = 1
 
-# # Buttons and functions
-# ---Functions
-
-
-def draw(opcion):
-    global cell_color, bg_color, bg_color
-    if opcion == 'celula':
-        cell_color = pick_color(root)
-    if opcion == 'Bg':
-        bg_color = pick_color(root)
-
-
-def stop():
-    global pauseExect
-    pauseExect = not pauseExect
-
-
-def plot(plt, cell_array_x, cell_gen_y):
-    plt.plot(cell_gen_y, cell_array_x, ":", color="b")
-    plt.xlabel('poblacion')
-    plt.ylabel('generacion')
-    plt.title('Grafica de poblacion')
-    plt.show()
-
-
-# ---Buttons
-button1 = Button(root, text='Cell color',  command=lambda: draw('celula'))
-button1.pack(side=LEFT)
-button1 = Button(root, text='Bg color',  command=lambda: draw('Bg'))
-button1.pack(side=LEFT)
-buttonStop = Button(root, text='Stop/Play', command=stop)
-buttonStop.pack(side=RIGHT)
-buttonPlot = Button(root, text='Plot', command=lambda: plot(
-    plt, cell_array_x, cell_gen_y
-))
-buttonPlot.pack()
-
-pygame.display.update()
-root.update()
-
 
 def event_handler(es):
     global running, pauseExect
@@ -208,11 +247,16 @@ while running:
             if new_system[x, y] == 1:
                 cell_counting += 1
                 pygame.draw.polygon(screen, cell_color, polygon, 0)
-    # state update
+    # Solo actualizamos los datos del matplot y del tk si no esta en pausa
     if not pauseExect:
+        etiqPoblacion.config(text=cell_counting)
+        etiqGeneracion.config(text=cell_generation)
         cell_array_x.append(cell_counting)
+        cell_array_x_log.append(math.log10(cell_counting))
         cell_gen_y.append(cell_generation)
         cell_generation += 1
+
+    # state update
     system_state = np.copy(new_system)
     pygame.display.update()
     root.update()
