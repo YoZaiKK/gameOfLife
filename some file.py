@@ -46,11 +46,16 @@ def toro():
 
 
 def leer():
-    pass
+    global system_state
+    system_state = np.loadtxt('./static/matrix.txt', usecols=range(num_cells_x)) 
 
 
-def guardar():
-    pass
+def guardar(CXY):
+    #Binary data
+    np.save('./static/matrix.npy', CXY)
+
+    #Human readable data
+    np.savetxt('./static/matrix.txt', CXY)
 
 
 def plot(plt, cell_array_x, cell_gen_y, cell_array_x_log):
@@ -110,14 +115,14 @@ etiqToro = Label(root, text="Si" if toroide else "No", foreground="yellow",
                  background="black", borderwidth=5, anchor="w")
 etiqToro.grid(row=5, column=1, sticky='nesw')
 
-# # Save and read matrix
+# # Buttons to Save and read matrix
 
-# btn para cambiar de toroide a no toroide
-buttonTorRead = Button(root, text='Abrir configuracion', command=leer)
+# btn para read matrix
+buttonTorRead = Button(root, text='Abrir configuracion', command=lambda:leer())
 buttonTorRead.grid(row=6, column=0, sticky='nesw')
 
-# Et de numero de celulas vivas
-buttonTorSave = Button(root, text="Guardar configuracion", command=guardar)
+# btn para Save matrix
+buttonTorSave = Button(root, text="Guardar configuracion", command=lambda:guardar(system_state))
 buttonTorSave.grid(row=6, column=1, sticky='nesw')
 
 # root update
