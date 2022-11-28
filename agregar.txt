@@ -1,0 +1,7 @@
+limpiar
+modificar reglas en interfaz
+seleccionar archivo desde el explorador, bajar a 0 la generacion
+guardar con nombre especifico la matriz
+zoom in/out
+scroll
+
